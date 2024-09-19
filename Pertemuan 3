@@ -1,0 +1,148 @@
+1. Membentuk Basis Data
+CREATE DATABASE Product
+
+2. Membangun Tabel Pelanggan dan Produk
+CREATE TABLE Product(
+ProductID INT PRIMARY KEY,
+ProductName VARCHAR(100),
+SupplierID INT,
+CategoryID INT,
+Unit VARCHAR(50),
+Price DECIMAL(10,2)
+);
+
+CREATE TABLE Customers(
+customerID INT PRIMARY KEY,
+customerName VARCHAR(100),
+contactName VARCHAR(100),
+address VARCHAR(255),
+city VARCHAR(100),
+postalCode VARCHAR(20),
+country VARCHAR(100)
+);
+
+3. Memasukkan Data dari Excel ke Tabel (Menggunakan Fitur Import Data Tabel)
+Gunakan fitur Tabel Data Import Wizard. Sebelum mengimport data, dile excel dipisah menjadi dua file dengan format csv
+
+4. Menampilkan Seluruh Data dari Kedua Tabel sql
+SELECT * FROM Customers;
+SELECT * FROM Product;
+
+5. Melakukan Filter Data Menggunakan WHERE
+
+SELECT *  FROM Customers
+ORDER BY customerID;
+
+SELECT *  FROM Customers
+WHERE country = "Mexico";
+
+SELECT *  FROM Customers
+WHERE city in ("Paris", "London");
+
+SELECT *  FROM Product
+WHERE price >= 30;
+
+SELECT *  FROM Product
+WHERE price BETWEEN 50 AND 60;
+
+SELECT *  FROM Customers
+WHERE city LIKE "s%";
+
+SELECT *  FROM Customers
+WHERE country = "Germany" AND city = "Berlin";
+
+SELECT *  FROM Customers
+WHERE country = "Germany" OR city = "Berlin";
+
+SELECT *  FROM Customers
+WHERE NOT country = "Germany";
+
+SELECT CustomerName, ContactName, Address  FROM Customers
+WHERE Address is NULL;
+
+SELECT MIN(price) AS SmallestPrice FROM Product; 
+SELECT MAX(price) AS LargestPrice FROM Product; 
+
+SELECT ProductName FROM Product WHERE ProductID = ANY (SELECT ProductID FROM Product WHERE Price = 30);
+
+SELECT ALL ProductName FROM Product WHERE TRUE;
+
+SELECT * FROM Product WHERE Price > SOME (SELECT Price FROM Product WHERE Price > 20);
+
+SELECT * FROM Product WHERE EXISTS (SELECT Price XISTS FROM Product WHERE Price > 50);
+
+SELECT *, rowid FROM Customers WHERE rowid = 2;
+
+6.Mengurutkan Data Menggunakan ORDER BY
+SELECT * FROM Product
+ORDER BY Price ASC;
+
+SELECT * FROM Product
+ORDER BY ProductName DESC;
+
+SELECT * FROM Customers 
+ORDER BY Country ASC, CustomerName DESC;
+
+7. Membatasi Hasil Pencarian Menggunakan LIMIT
+SELECT ProductID, ProductName 
+FROM Product LIMIT 10;
+
+
+8. Mengelompokkan Data Menggunakan GROUP BY
+SELECT city, COUNT(*) AS Jumlah_pelanggan 
+FROM Customers
+GROUP BY city;
+
+8. Menggunakan Nama Alias pada Kolom
+SELECT CustomerName, City, Country FROM Customers;
+SELECT CustomerName AS Customer, ContactName AS "Contact Person" FROM Customers;
+SELECT CustomerID AS ID, CustomerName AS Customer FROM Customers;
+
+9. Menggabungkan Data dengan INNER JOIN & SELF JOIN
+
+SELECT Product.ProductID, Customers.CustomerName, Product.SupplierID
+FROM Product INNER JOIN Customers ON Product.ProductID = Customers.CustomerID;
+
+SELECT P.ProductID, C.CustomerName, P.SupplierID FROM Product P
+INNER JOIN Customers C ON P.ProductID = C.CustomerID;
+
+
+10. Menggunakan DISTINCT & CASE
+SELECT DISTINCT ProductName FROM Product;
+
+SELECT COUNT(DISTINCT Country) FROM Customers;
+
+
+SELECT ProductID, Price, CASE
+WHEN Price > 30 THEN "The price is greater than 30"
+WHEN Price = 30 THEN "The price is 30"
+ELSE 'The price is under 30' 
+END AS PriceText FROM Product;
+
+11. Menjalankan Operasi DML (Data Manipulation Language)
+INSERT INTO Customers (CustomerName, City, Country) SELECT SupplierID, CategoryID, Unit FROM Product;
+
+INSERT INTO Customers (CustomerName, City, Country) VALUES ('Cardinal', 'Stavanger', 'Norway');
+
+
+UPDATE Customers SET ContactName = 'Alfred Schmidt', City = 'Frankfurt' WHERE CustomerID = 1;
+
+UPDATE Customers SET ContactName = "Juan" WHERE Country = "Mexico";
+
+DELETE FROM Customers WHERE CustomerName = 'Altredis Futterkiste';
+
+12. Menggabungkan Hasil Pencarian dengan UNION
+-- Sebelum menggunakan syntax union, kita terlebih dahulu menambahkan sebuah column di tabel manapun dengan nama yang sama dengan salh satu tabel
+-- disini tabel product akan ditambahkan column city dengan data city yang sama dengan tabel Customers
+ALTER TABLE Product
+ADD City VARCHAR(100);
+
+UPDATE Product
+JOIN Customers ON Product.ProductID = Customers.CustomerID
+SET Product.City = Customers.City;
+
+-- Setelah itu gunakan syntax Union untuk menggabungkan hasil pencarian kedua tabel berdasarkan column city
+SELECT City FROM Customers
+UNION
+SELECT City From Product
+ORDER BY City;
